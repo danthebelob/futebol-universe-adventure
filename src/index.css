@@ -1,10 +1,13 @@
+
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Montserrat:wght@500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
+    --background: 137 58% 99%;
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -13,8 +16,8 @@
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    --primary: 142 77% 30%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 210 40% 96.1%;
     --secondary-foreground: 222.2 47.4% 11.2%;
@@ -30,39 +33,32 @@
 
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --ring: 142 76% 45%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 0 0% 98%;
-
     --sidebar-foreground: 240 5.3% 26.1%;
-
     --sidebar-primary: 240 5.9% 10%;
-
     --sidebar-primary-foreground: 0 0% 98%;
-
     --sidebar-accent: 240 4.8% 95.9%;
-
     --sidebar-accent-foreground: 240 5.9% 10%;
-
     --sidebar-border: 220 13% 91%;
-
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 142 30% 12%;
     --foreground: 210 40% 98%;
 
-    --card: 222.2 84% 4.9%;
+    --card: 142 25% 18%;
     --card-foreground: 210 40% 98%;
 
     --popover: 222.2 84% 4.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 142 76% 45%;
+    --primary-foreground: 0 0% 100%;
 
     --secondary: 217.2 32.6% 17.5%;
     --secondary-foreground: 210 40% 98%;
@@ -78,15 +74,7 @@
 
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --ring: 142 76% 45%;
   }
 }
 
@@ -96,6 +84,78 @@
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-heading font-bold;
+  }
+}
+
+@layer components {
+  .game-card {
+    @apply bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden border-2 border-fu-green-200 hover:border-fu-green-500;
+  }
+
+  .card-title {
+    @apply text-xl font-heading font-bold text-fu-green-800;
+  }
+  
+  .card-description {
+    @apply text-gray-600;
+  }
+  
+  .btn-primary {
+    @apply bg-fu-green-600 hover:bg-fu-green-700 text-white font-medium px-4 py-2 rounded-md transition-colors duration-200;
+  }
+  
+  .trophy-icon {
+    @apply text-fu-gold-500;
+  }
+  
+  .player-avatar {
+    @apply rounded-full border-4 border-fu-blue-500;
+  }
+  
+  .rare-item {
+    @apply animate-pulse-glow;
+  }
+
+  .grid-container {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6;
+  }
+
+  /* Bingo card styling */
+  .bingo-cell {
+    @apply border-2 border-fu-blue-300 rounded-md p-3 text-center hover:bg-fu-blue-100 transition-colors duration-200 cursor-pointer;
+  }
+
+  .bingo-cell.marked {
+    @apply bg-fu-blue-300 text-white font-bold;
+  }
+
+  .bingo-free {
+    @apply bg-fu-gold-100 border-2 border-fu-gold-500 text-fu-gold-700 font-bold;
+  }
+
+  /* Player card styling */
+  .player-card {
+    @apply relative rounded-xl overflow-hidden transition-all duration-300;
+  }
+
+  .player-card-common {
+    @apply bg-gradient-to-br from-gray-100 to-gray-300 border-2 border-gray-400;
+  }
+
+  .player-card-rare {
+    @apply bg-rare-card border-2 border-fu-gold-500;
+  }
+
+  .player-card-epic {
+    @apply bg-epic-card border-2 border-fu-blue-600 shadow-md shadow-blue-300;
+  }
+
+  .player-card-legendary {
+    @apply bg-legendary-card border-2 border-purple-600 animate-pulse-glow;
   }
 }
