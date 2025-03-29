@@ -1,8 +1,9 @@
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, X } from 'lucide-react';
+import { CheckCircle2, X, Flag } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { Player, fetchPlayers } from '@/utils/playerUtils';
+import PlayerCard from './PlayerCard';
 
 interface BingoCell {
   id: string;
@@ -21,17 +22,17 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
   const [players, setPlayers] = useState<Player[]>([]);
   const [playersQueue, setPlayersQueue] = useState<Player[]>([]);
   const [remainingPlayers, setRemainingPlayers] = useState(0);
-  const [score, setScore] = useState(0);
+  const [markedCells, setMarkedCells] = useState(0);
+  const [totalCells, setTotalCells] = useState(25);
   const [hasWon, setHasWon] = useState(false);
 
   const categories = [
-    'Manchester City', 'Barcelona', 'Real Madrid', 'Bayern Munich',
-    'Paris Saint-Germain', 'Liverpool', 'Juventus', 'Chelsea',
-    'Manchester United', 'Atlético Madrid', 'Inter Milan', 'AC Milan',
-    'Arsenal', 'Tottenham', 'Borussia Dortmund', 'Napoli',
-    'Seleção Brasileira', 'Seleção Argentina', 'Seleção França', 'Seleção Inglaterra',
-    'Champions League', 'Premier League', 'La Liga', 'Serie A',
-    'Bundesliga'
+    'Barcelona', 'Real Madrid', 'Atlético de Madrid', 'Bayern de Munique', 
+    'Borussia Dortmund', 'Bayer Leverkusen', 'Arsenal', 'Tottenham', 
+    'Chelsea', 'Manchester City', 'Manchester United', 'Liverpool', 
+    'Juventus', 'Milan', 'Inter de Milão', 'PSG', 'Lyon',
+    'Brasil', 'Argentina', 'Colombia', 'Uruguai', 'Inglaterra', 
+    'Holanda', 'Alemanha', 'Italia', 'Espanha', 'França'
   ];
 
   // Carregar jogadores
@@ -69,7 +70,7 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     
     const timer = setTimeout(() => {
       callNextPlayer();
-    }, 5000);
+    }, 10000); // Mostra o jogador por 10 segundos
     
     return () => clearTimeout(timer);
   }, [currentPlayer, playersQueue, hasWon]);
@@ -78,15 +79,16 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
   useEffect(() => {
     if (hasWon) return;
     
-    if (score >= 10) {
+    // Verificar se todas as células foram marcadas
+    if (markedCells >= totalCells) {
       setHasWon(true);
       toast({
         title: "BINGO!",
-        description: "Parabéns! Você atingiu 10 pontos!",
+        description: "Parabéns! Você completou toda a cartela!",
       });
       if (onBingo) onBingo();
     }
-  }, [score, hasWon]);
+  }, [markedCells, totalCells, hasWon, onBingo]);
 
   const generateBingoCard = () => {
     // Selecionar 25 categorias aleatoriamente (5x5)
@@ -113,6 +115,8 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     }
     
     setCells(newCard);
+    setMarkedCells(0);
+    setTotalCells(25);
   };
 
   const callNextPlayer = () => {
@@ -129,18 +133,15 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     setCurrentPlayer(nextPlayer);
     setPlayersQueue(prev => prev.slice(1));
     setRemainingPlayers(prev => prev - 1);
-    
-    toast({
-      title: "Novo jogador",
-      description: nextPlayer.name,
-      duration: 4000,
-    });
   };
 
   const handleCellClick = (rowIndex: number, cellIndex: number) => {
     if (!currentPlayer || hasWon) return;
     
     const cell = cells[rowIndex][cellIndex];
+    
+    // Não permitir clicar em células já marcadas
+    if (cell.marked) return;
     
     // Verificar se este time/categoria está associado ao jogador atual
     const isCorrect = currentPlayer.teams.includes(cell.value);
@@ -156,8 +157,8 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     });
     
     if (isCorrect) {
-      // Aumentar a pontuação
-      setScore(prev => prev + 1);
+      // Aumentar o contador de células marcadas
+      setMarkedCells(prev => prev + 1);
       toast({
         title: "Correto!",
         description: `${currentPlayer.name} jogou no ${cell.value}!`,
@@ -176,25 +177,61 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     setTimeout(callNextPlayer, 1500);
   };
 
+  // Função para determinar o ícone de nacionalidade
+  const getNationalityFlag = (nationality: string) => {
+    const flagCodes: {[key: string]: string} = {
+      'Brasil': '🇧🇷',
+      'Argentina': '🇦🇷',
+      'Colombia': '🇨🇴',
+      'Uruguai': '🇺🇾',
+      'Inglaterra': '🇬🇧',
+      'Holanda': '🇳🇱',
+      'Alemanha': '🇩🇪',
+      'Italia': '🇮🇹',
+      'Espanha': '🇪🇸',
+      'França': '🇫🇷',
+      'Portugal': '🇵🇹',
+      'Bélgica': '🇧🇪',
+      'Polônia': '🇵🇱',
+      'Egito': '🇪🇬',
+      'Noruega': '🇳🇴'
+    };
+    
+    return flagCodes[nationality] || <Flag size={16} />;
+  };
+
   return (
     <div className="max-w-lg mx-auto">
       {currentPlayer && (
-        <div className="bg-purple-800 text-white p-4 mb-4 rounded-t-xl flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-12 h-12 bg-white text-purple-900 rounded-full flex items-center justify-center font-bold text-xl mr-3">
-              {remainingPlayers}
+        <div className="bg-purple-800 text-white p-4 mb-4 rounded-t-xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="w-12 h-12 bg-white text-purple-900 rounded-full flex items-center justify-center font-bold text-xl mr-3">
+                {remainingPlayers}
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center">
+                  <h3 className="font-bold text-xl uppercase">{currentPlayer.name}</h3>
+                  <span className="ml-2">{getNationalityFlag(currentPlayer.nationality)}</span>
+                </div>
+                <p className="text-sm opacity-80">
+                  {currentPlayer.club}
+                </p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-bold text-xl uppercase">{currentPlayer.name}</h3>
-              <p className="text-sm opacity-80">{currentPlayer.nationality} • {currentPlayer.club}</p>
-            </div>
+            <PlayerCard 
+              id={currentPlayer.id}
+              name={currentPlayer.name}
+              position={currentPlayer.position}
+              nationality={currentPlayer.nationality}
+              club={currentPlayer.club}
+              overall={currentPlayer.overall}
+              attack={currentPlayer.attack}
+              defense={currentPlayer.defense}
+              imageSrc={currentPlayer.imageSrc}
+              rarity={currentPlayer.rarity}
+            />
           </div>
-          <button 
-            className="bg-purple-600 hover:bg-purple-500 text-white px-4 py-2 rounded"
-            onClick={callNextPlayer}
-          >
-            SKIP
-          </button>
         </div>
       )}
       
@@ -203,7 +240,7 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
           <h2 className="text-2xl font-heading font-bold text-white">
             BINGO FUTEBOL
           </h2>
-          <p className="text-sm">Pontuação: {score}/10</p>
+          <p className="text-sm">Progresso: {markedCells}/{totalCells} células</p>
         </div>
         
         <div className="grid grid-cols-5 gap-1">
@@ -221,21 +258,7 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
                 `}
                 onClick={() => handleCellClick(rowIndex, cellIndex)}
               >
-                {cell.value === 'Manchester City' && <span>Man City</span>}
-                {cell.value === 'Manchester United' && <span>Man United</span>}
-                {cell.value === 'Atlético Madrid' && <span>Atlético</span>}
-                {cell.value === 'Bayern Munich' && <span>Bayern</span>}
-                {cell.value === 'Paris Saint-Germain' && <span>PSG</span>}
-                {cell.value === 'Borussia Dortmund' && <span>Dortmund</span>}
-                {cell.value === 'Premier League' && <span>Premier</span>}
-                {cell.value === 'Champions League' && <span>Champions</span>}
-                {cell.value === 'Seleção Brasileira' && <span>Brasil</span>}
-                {cell.value === 'Seleção Argentina' && <span>Argentina</span>}
-                {cell.value === 'Seleção França' && <span>França</span>}
-                {cell.value === 'Seleção Inglaterra' && <span>Inglaterra</span>}
-                {!['Manchester City', 'Manchester United', 'Atlético Madrid', 'Bayern Munich', 
-                'Paris Saint-Germain', 'Borussia Dortmund', 'Premier League', 'Champions League', 
-                'Seleção Brasileira', 'Seleção Argentina', 'Seleção França', 'Seleção Inglaterra'].includes(cell.value) && <span>{cell.value}</span>}
+                <span className="text-center">{cell.value}</span>
                 
                 {cell.marked && (
                   <div className="absolute top-0 right-0 p-1">

@@ -36,8 +36,8 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   useEffect(() => {
     const loadPlayerImage = async () => {
       try {
-        // Se já temos uma URL completa do Supabase, use-a diretamente
-        if (imageSrc && imageSrc.startsWith('https://')) {
+        // Se já temos uma URL completa do Supabase ou outra fonte externa, use-a diretamente
+        if (imageSrc && (imageSrc.startsWith('https://') || imageSrc.startsWith('http://'))) {
           setImageUrl(imageSrc);
           return;
         }
@@ -96,6 +96,29 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
     setImageError(true);
   };
   
+  // Função para determinar o ícone de nacionalidade
+  const getNationalityFlag = (nationality: string) => {
+    const flagCodes: {[key: string]: string} = {
+      'Brasil': '🇧🇷',
+      'Argentina': '🇦🇷',
+      'Colombia': '🇨🇴',
+      'Uruguai': '🇺🇾',
+      'Inglaterra': '🇬🇧',
+      'Holanda': '🇳🇱',
+      'Alemanha': '🇩🇪',
+      'Italia': '🇮🇹',
+      'Espanha': '🇪🇸',
+      'França': '🇫🇷',
+      'Portugal': '🇵🇹',
+      'Bélgica': '🇧🇪',
+      'Polônia': '🇵🇱',
+      'Egito': '🇪🇬',
+      'Noruega': '🇳🇴'
+    };
+    
+    return flagCodes[nationality] || '';
+  };
+  
   return (
     <div 
       className={`${cardClass} w-full max-w-[200px] aspect-[2/3] cursor-pointer`}
@@ -126,7 +149,9 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           <div className="mt-auto bg-white/80 rounded-md p-2">
             <h3 className="text-center font-bold text-sm truncate">{name}</h3>
             <div className="flex justify-between text-xs mt-1">
-              <span>{nationality}</span>
+              <span className="flex items-center">
+                {getNationalityFlag(nationality)} {nationality}
+              </span>
               <span>{club}</span>
             </div>
             
@@ -164,7 +189,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
             
             <div className="bg-white/80 rounded p-2">
               <div className="text-xs text-gray-600">Nacionalidade</div>
-              <div className="font-medium">{nationality}</div>
+              <div className="font-medium flex items-center">
+                <span className="mr-1">{getNationalityFlag(nationality)}</span>
+                {nationality}
+              </div>
             </div>
             
             <div className="bg-white/80 rounded p-2">

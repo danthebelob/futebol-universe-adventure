@@ -87,7 +87,7 @@ const BingoGamePage: React.FC = () => {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Quando um jogador for anunciado, marque o time/categoria correspondente na sua cartela. Complete uma linha, coluna ou diagonal para vencer!
+                      Quando um jogador for anunciado, marque o time/categoria correspondente na sua cartela. Complete todas as células da cartela para vencer!
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -97,7 +97,7 @@ const BingoGamePage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <div className="flex items-center">
                 <Clock size={16} className="mr-1" />
-                <span>Novo jogador a cada 5 segundos</span>
+                <span>Novo jogador a cada 10 segundos</span>
               </div>
               <div className="flex items-center">
                 <Trophy size={16} className="mr-1" />
@@ -116,10 +116,10 @@ const BingoGamePage: React.FC = () => {
                 <>
                   <div className="mb-6">
                     <h2 className="font-heading font-bold text-lg text-center text-fu-blue-800 mb-2">
-                      Aguarde o anúncio dos jogadores e marque seus times/categorias na cartela
+                      Marque os times/categorias corretas para cada jogador anunciado
                     </h2>
                     <p className="text-center text-gray-600 text-sm">
-                      Complete uma linha, coluna ou diagonal para vencer!
+                      Complete todas as células da cartela para vencer!
                     </p>
                   </div>
                   
