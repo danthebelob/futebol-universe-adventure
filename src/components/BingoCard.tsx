@@ -1,9 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
-import { CheckCircle2, X, Flag } from 'lucide-react';
+import { CheckCircle2, X, Flag, Play } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { Player, fetchPlayers } from '@/utils/playerUtils';
 import PlayerCard from './PlayerCard';
+import { Button } from './ui/button';
 
 interface BingoCell {
   id: string;
@@ -25,6 +26,8 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
   const [markedCells, setMarkedCells] = useState(0);
   const [totalCells, setTotalCells] = useState(25);
   const [hasWon, setHasWon] = useState(false);
+  const [gameStarted, setGameStarted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const categories = [
     'Barcelona', 'Real Madrid', 'Atlético de Madrid', 'Bayern de Munique', 
@@ -38,14 +41,12 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
   // Carregar jogadores
   useEffect(() => {
     const loadAllPlayers = async () => {
+      setIsLoading(true);
       try {
         const fetchedPlayers = await fetchPlayers();
         setPlayers(fetchedPlayers);
-        
-        // Criar uma fila de jogadores em ordem aleatória
-        const shuffled = [...fetchedPlayers].sort(() => 0.5 - Math.random());
-        setPlayersQueue(shuffled);
-        setRemainingPlayers(shuffled.length);
+        console.log(`Loaded ${fetchedPlayers.length} players`);
+        setIsLoading(false);
       } catch (error) {
         console.error('Erro ao carregar jogadores:', error);
         toast({
@@ -53,6 +54,7 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
           description: "Não foi possível carregar os jogadores.",
           variant: "destructive"
         });
+        setIsLoading(false);
       }
     };
     
@@ -64,16 +66,12 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     generateBingoCard();
   }, []);
 
-  // Chamar próximo jogador
+  // Chamar próximo jogador quando o jogo começa
   useEffect(() => {
-    if (hasWon || playersQueue.length === 0) return;
-    
-    const timer = setTimeout(() => {
+    if (gameStarted && currentPlayer === null && playersQueue.length > 0) {
       callNextPlayer();
-    }, 10000); // Mostra o jogador por 10 segundos
-    
-    return () => clearTimeout(timer);
-  }, [currentPlayer, playersQueue, hasWon]);
+    }
+  }, [gameStarted, currentPlayer, playersQueue]);
 
   // Verificar vitória
   useEffect(() => {
@@ -119,12 +117,43 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
     setTotalCells(25);
   };
 
+  const startGame = () => {
+    // Verificar se temos jogadores
+    if (players.length === 0) {
+      toast({
+        title: "Erro",
+        description: "Não há jogadores disponíveis para iniciar o jogo.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    // Resetar estado do jogo
+    setHasWon(false);
+    setMarkedCells(0);
+    generateBingoCard();
+    
+    // Criar uma fila de jogadores em ordem aleatória
+    const shuffled = [...players].sort(() => 0.5 - Math.random());
+    setPlayersQueue(shuffled);
+    setRemainingPlayers(shuffled.length);
+    setCurrentPlayer(null);
+    setGameStarted(true);
+    
+    toast({
+      title: "Jogo Iniciado",
+      description: "Boa sorte!",
+    });
+  };
+
   const callNextPlayer = () => {
     if (playersQueue.length === 0) {
       toast({
         title: "Fim de jogo",
         description: "Todos os jogadores foram mostrados.",
       });
+      setCurrentPlayer(null);
+      setGameStarted(false);
       return;
     }
     
@@ -136,7 +165,7 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
   };
 
   const handleCellClick = (rowIndex: number, cellIndex: number) => {
-    if (!currentPlayer || hasWon) return;
+    if (!currentPlayer || hasWon || !gameStarted) return;
     
     const cell = cells[rowIndex][cellIndex];
     
@@ -162,18 +191,18 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
       toast({
         title: "Correto!",
         description: `${currentPlayer.name} jogou no ${cell.value}!`,
-        duration: 2000,
+        duration: 1500,
       });
     } else {
       toast({
         title: "Incorreto!",
         description: `${currentPlayer.name} não jogou no ${cell.value}.`,
         variant: "destructive",
-        duration: 2000,
+        duration: 1500,
       });
     }
     
-    // Avançar para o próximo jogador
+    // Avançar para o próximo jogador automaticamente
     setTimeout(callNextPlayer, 1500);
   };
 
@@ -202,100 +231,123 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
 
   return (
     <div className="max-w-lg mx-auto">
-      {currentPlayer && (
-        <div className="bg-purple-800 text-white p-4 mb-4 rounded-t-xl">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center">
-              <div className="w-12 h-12 bg-white text-purple-900 rounded-full flex items-center justify-center font-bold text-xl mr-3">
-                {remainingPlayers}
-              </div>
-              <div className="flex-1">
+      {!gameStarted ? (
+        <div className="text-center py-8">
+          <Button 
+            onClick={startGame} 
+            disabled={isLoading}
+            className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-xl text-lg font-bold flex items-center gap-2"
+          >
+            <Play /> Iniciar Jogo
+          </Button>
+          {isLoading && <p className="mt-2 text-gray-500">Carregando jogadores...</p>}
+        </div>
+      ) : (
+        <>
+          {currentPlayer ? (
+            <div className="bg-purple-800 text-white p-4 mb-4 rounded-t-xl">
+              <div className="flex items-center justify-between">
                 <div className="flex items-center">
-                  <h3 className="font-bold text-xl uppercase">{currentPlayer.name}</h3>
-                  <span className="ml-2">{getNationalityFlag(currentPlayer.nationality)}</span>
+                  <div className="w-12 h-12 bg-white text-purple-900 rounded-full flex items-center justify-center font-bold text-xl mr-3">
+                    {remainingPlayers}
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center">
+                      <h3 className="font-bold text-xl uppercase">{currentPlayer.name}</h3>
+                      <span className="ml-2">{getNationalityFlag(currentPlayer.nationality)}</span>
+                    </div>
+                    <p className="text-sm opacity-80">
+                      {currentPlayer.club}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm opacity-80">
-                  {currentPlayer.club}
-                </p>
+                <PlayerCard 
+                  id={currentPlayer.id}
+                  name={currentPlayer.name}
+                  position={currentPlayer.position}
+                  nationality={currentPlayer.nationality}
+                  club={currentPlayer.club}
+                  overall={currentPlayer.overall}
+                  attack={currentPlayer.attack}
+                  defense={currentPlayer.defense}
+                  imageSrc={currentPlayer.imageSrc}
+                  rarity={currentPlayer.rarity}
+                />
               </div>
             </div>
-            <PlayerCard 
-              id={currentPlayer.id}
-              name={currentPlayer.name}
-              position={currentPlayer.position}
-              nationality={currentPlayer.nationality}
-              club={currentPlayer.club}
-              overall={currentPlayer.overall}
-              attack={currentPlayer.attack}
-              defense={currentPlayer.defense}
-              imageSrc={currentPlayer.imageSrc}
-              rarity={currentPlayer.rarity}
-            />
-          </div>
-        </div>
-      )}
-      
-      <div className="bg-gray-800 rounded-xl shadow-lg p-4 border-4 border-indigo-500">
-        <div className="text-center mb-4 text-white">
-          <h2 className="text-2xl font-heading font-bold text-white">
-            BINGO FUTEBOL
-          </h2>
-          <p className="text-sm">Progresso: {markedCells}/{totalCells} células</p>
-        </div>
-        
-        <div className="grid grid-cols-5 gap-1">
-          {cells.map((row, rowIndex) => (
-            row.map((cell, cellIndex) => (
-              <div
-                key={cell.id}
-                className={`
-                  flex flex-col items-center justify-center text-xs sm:text-sm cursor-pointer
-                  ${cell.marked ? 
-                    (cell.isCorrect ? 'bg-green-600 text-white' : 'bg-red-600 text-white') : 
-                    'bg-gray-700 text-white hover:bg-gray-600'
-                  }
-                  p-2 rounded-md relative aspect-square
-                `}
-                onClick={() => handleCellClick(rowIndex, cellIndex)}
-              >
-                <span className="text-center">{cell.value}</span>
-                
-                {cell.marked && (
-                  <div className="absolute top-0 right-0 p-1">
-                    {cell.isCorrect ? (
-                      <CheckCircle2 size={16} className="text-green-300" />
-                    ) : (
-                      <X size={16} className="text-red-300" />
+          ) : (
+            <div className="bg-purple-800 text-white p-4 mb-4 rounded-t-xl text-center">
+              <p>Aguardando próximo jogador...</p>
+            </div>
+          )}
+
+          <div className="bg-gray-800 rounded-xl shadow-lg p-4 border-4 border-indigo-500">
+            <div className="text-center mb-4 text-white">
+              <h2 className="text-2xl font-heading font-bold text-white">
+                BINGO FUTEBOL
+              </h2>
+              <p className="text-sm">Progresso: {markedCells}/{totalCells} células</p>
+            </div>
+            
+            <div className="grid grid-cols-5 gap-1">
+              {cells.map((row, rowIndex) => (
+                row.map((cell, cellIndex) => (
+                  <div
+                    key={cell.id}
+                    className={`
+                      flex flex-col items-center justify-center text-xs sm:text-sm cursor-pointer
+                      ${cell.marked ? 
+                        (cell.isCorrect ? 'bg-green-600 text-white' : 'bg-red-600 text-white') : 
+                        'bg-gray-700 text-white hover:bg-gray-600'
+                      }
+                      p-2 rounded-md relative aspect-square
+                      ${!gameStarted || !currentPlayer ? 'opacity-50 pointer-events-none' : ''}
+                    `}
+                    onClick={() => handleCellClick(rowIndex, cellIndex)}
+                  >
+                    <span className="text-center">{cell.value}</span>
+                    
+                    {cell.marked && (
+                      <div className="absolute top-0 right-0 p-1">
+                        {cell.isCorrect ? (
+                          <CheckCircle2 size={16} className="text-green-300" />
+                        ) : (
+                          <X size={16} className="text-red-300" />
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
+                ))
+              ))}
+            </div>
+            
+            {hasWon && (
+              <div className="mt-4 p-2 bg-yellow-400 text-yellow-900 border border-yellow-600 rounded-md text-center animated-bounce">
+                <p className="font-bold">BINGO! Parabéns!</p>
+                <p className="text-sm">Você ganhou 50 moedas e uma carta rara!</p>
               </div>
-            ))
-          ))}
-        </div>
-        
-        {hasWon && (
-          <div className="mt-4 p-2 bg-yellow-400 text-yellow-900 border border-yellow-600 rounded-md text-center animated-bounce">
-            <p className="font-bold">BINGO! Parabéns!</p>
-            <p className="text-sm">Você ganhou 50 moedas e uma carta rara!</p>
+            )}
           </div>
-        )}
-      </div>
+        </>
+      )}
       
       <div className="mt-4 flex justify-between">
-        <button 
+        <Button 
           onClick={generateBingoCard} 
           className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-md"
         >
           Nova Cartela
-        </button>
+        </Button>
         
-        <button 
-          onClick={callNextPlayer} 
-          className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
-        >
-          Próximo Jogador
-        </button>
+        {gameStarted && (
+          <Button 
+            onClick={callNextPlayer} 
+            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md"
+            disabled={playersQueue.length === 0}
+          >
+            Próximo Jogador
+          </Button>
+        )}
       </div>
     </div>
   );

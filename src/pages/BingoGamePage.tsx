@@ -31,10 +31,10 @@ const BingoGamePage: React.FC = () => {
       const fetchedPlayers = await fetchPlayers();
       setPlayers(fetchedPlayers);
       
-      if (fetchedPlayers.length === 0) {
+      if (fetchedPlayers.length < 50) {
         toast({
-          title: "Nenhum jogador encontrado",
-          description: "Adicionando jogadores de demonstração automaticamente...",
+          title: "Poucos jogadores encontrados",
+          description: "Adicionando mais jogadores de demonstração automaticamente...",
         });
         await addDemoPlayers();
         const newPlayers = await fetchPlayers();
@@ -111,7 +111,10 @@ const BingoGamePage: React.FC = () => {
           <div className="container mx-auto">
             <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
               {loading ? (
-                <div className="text-center py-8">Carregando jogadores...</div>
+                <div className="text-center py-8">
+                  <div className="animate-spin h-8 w-8 border-4 border-fu-blue-500 border-t-transparent rounded-full mx-auto mb-4"></div>
+                  <p>Carregando jogadores...</p>
+                </div>
               ) : (
                 <>
                   <div className="mb-6">
