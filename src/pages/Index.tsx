@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Ball, Trophy, PackagePlus, Users, Star } from 'lucide-react';
+import { Circle, Trophy, PackagePlus, Users, Star } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import Navbar from '@/components/Navbar';
@@ -46,7 +46,7 @@ const Index: React.FC = () => {
               <div className="md:w-1/2 flex justify-center">
                 <div className="relative">
                   <div className="w-64 h-64 rounded-full bg-fu-green-600 opacity-40 animate-pulse"></div>
-                  <Ball size={200} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white" />
+                  <Circle size={200} className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-white" />
                 </div>
               </div>
             </div>
