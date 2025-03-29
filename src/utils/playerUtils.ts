@@ -35,14 +35,14 @@ export const fetchPlayers = async (): Promise<Player[]> => {
     return data.map(player => ({
       id: player.id,
       name: player.name,
-      position: player.attributes?.position || 'CA',
-      nationality: player.attributes?.nationality || 'Brasil',
-      club: player.attributes?.club || 'Sem Clube',
-      overall: player.attributes?.overall || 75,
-      attack: player.attributes?.attack || 70,
-      defense: player.attributes?.defense || 60,
+      position: player.attributes?.position as string || 'CA',
+      nationality: player.attributes?.nationality as string || 'Brasil',
+      club: player.attributes?.club as string || 'Sem Clube',
+      overall: player.attributes?.overall as number || 75,
+      attack: player.attributes?.attack as number || 70,
+      defense: player.attributes?.defense as number || 60,
       imageSrc: player.image_url,
-      rarity: player.attributes?.rarity || 'common',
+      rarity: player.attributes?.rarity as 'common' | 'rare' | 'epic' | 'legendary' || 'common',
       teams: player.teams || []
     }));
     
@@ -94,6 +94,62 @@ export const addDemoPlayers = async () => {
         attack: 91,
         defense: 30,
         rarity: "epic"
+      }
+    },
+    {
+      name: "Kylian Mbappé",
+      image_url: "https://upload.wikimedia.org/wikipedia/commons/5/57/2019-07-17_SG_Dynamo_Dresden_vs._Paris_Saint-Germain_by_Sandro_Halank–129_%28cropped%29.jpg",
+      teams: ["Monaco", "PSG", "Real Madrid", "França"],
+      attributes: {
+        position: "CA",
+        nationality: "França",
+        club: "Real Madrid",
+        overall: 91,
+        attack: 93,
+        defense: 36,
+        rarity: "epic"
+      }
+    },
+    {
+      name: "Kevin De Bruyne",
+      image_url: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Kevin_De_Bruyne_2018.jpg",
+      teams: ["Genk", "Chelsea", "Wolfsburg", "Manchester City", "Bélgica"],
+      attributes: {
+        position: "MC",
+        nationality: "Bélgica",
+        club: "Manchester City",
+        overall: 91,
+        attack: 88,
+        defense: 64,
+        rarity: "rare"
+      }
+    },
+    {
+      name: "Robert Lewandowski",
+      image_url: "https://upload.wikimedia.org/wikipedia/commons/0/03/Robert_Lewandowski%2C_FC_Bayern_München_%28by_Sven_Mandel%2C_2019-05-27%29_03.jpg",
+      teams: ["Dortmund", "Bayern Munich", "Barcelona", "Polônia"],
+      attributes: {
+        position: "CA",
+        nationality: "Polônia",
+        club: "Barcelona",
+        overall: 90,
+        attack: 92,
+        defense: 44,
+        rarity: "rare"
+      }
+    },
+    {
+      name: "Vinícius Júnior",
+      image_url: "https://upload.wikimedia.org/wikipedia/commons/f/f3/Vinicius_Junior_2021.jpg",
+      teams: ["Flamengo", "Real Madrid", "Brasil"],
+      attributes: {
+        position: "PE",
+        nationality: "Brasil",
+        club: "Real Madrid",
+        overall: 89,
+        attack: 90,
+        defense: 29,
+        rarity: "rare"
       }
     }
   ];
@@ -151,6 +207,32 @@ export const getDemoPlayers = (): Player[] => {
       imageSrc: "https://upload.wikimedia.org/wikipedia/commons/b/bc/Bra-Cos_%281%29_%28cropped%29.jpg",
       rarity: "epic",
       teams: ["Santos", "Barcelona", "PSG", "Al-Hilal", "Brasil"]
+    },
+    {
+      id: "4",
+      name: "Kylian Mbappé",
+      position: "CA",
+      nationality: "França",
+      club: "Real Madrid",
+      overall: 91,
+      attack: 93,
+      defense: 36,
+      imageSrc: "https://upload.wikimedia.org/wikipedia/commons/5/57/2019-07-17_SG_Dynamo_Dresden_vs._Paris_Saint-Germain_by_Sandro_Halank–129_%28cropped%29.jpg",
+      rarity: "epic",
+      teams: ["Monaco", "PSG", "Real Madrid", "França"]
+    },
+    {
+      id: "5",
+      name: "Kevin De Bruyne",
+      position: "MC",
+      nationality: "Bélgica",
+      club: "Manchester City",
+      overall: 91,
+      attack: 88,
+      defense: 64,
+      imageSrc: "https://upload.wikimedia.org/wikipedia/commons/e/e1/Kevin_De_Bruyne_2018.jpg",
+      rarity: "rare",
+      teams: ["Genk", "Chelsea", "Wolfsburg", "Manchester City", "Bélgica"]
     }
   ];
 };

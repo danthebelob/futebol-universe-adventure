@@ -44,16 +44,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
         
         // Se temos um caminho para o storage do Supabase
         if (imageSrc && !imageSrc.startsWith('/')) {
-          const { data, error } = await supabase.storage
+          const { data } = await supabase.storage
             .from('player_images')
             .getPublicUrl(imageSrc);
             
-          if (error) {
-            console.error('Erro ao buscar imagem:', error);
-            setImageError(true);
-            return;
-          }
-          
           if (data && data.publicUrl) {
             setImageUrl(data.publicUrl);
           }
