@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Info, Clock, Trophy } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import {
@@ -12,10 +12,40 @@ import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BingoCard from '@/components/BingoCard';
 import { toast } from "@/hooks/use-toast";
+import { Player, fetchPlayers, addDemoPlayers } from '@/utils/playerUtils';
+import { Button } from '@/components/ui/button';
 
 const BingoGamePage: React.FC = () => {
   const [wins, setWins] = useState(0);
   const [games, setGames] = useState(0);
+  const [players, setPlayers] = useState<Player[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    loadPlayers();
+  }, []);
+  
+  const loadPlayers = async () => {
+    setLoading(true);
+    try {
+      const fetchedPlayers = await fetchPlayers();
+      setPlayers(fetchedPlayers);
+      
+      if (fetchedPlayers.length === 0) {
+        toast({
+          title: "Nenhum jogador encontrado",
+          description: "Adicionando jogadores de demonstração automaticamente...",
+        });
+        await addDemoPlayers();
+        const newPlayers = await fetchPlayers();
+        setPlayers(newPlayers);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar jogadores:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
   
   const handleBingoWin = () => {
     setWins(prev => prev + 1);
@@ -57,7 +87,7 @@ const BingoGamePage: React.FC = () => {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p className="max-w-xs">
-                      Marque os nomes dos jogadores anunciados em sua cartela. Complete uma linha, coluna ou diagonal para vencer!
+                      Quando um jogador for anunciado, marque o time/categoria correspondente na sua cartela. Complete uma linha, coluna ou diagonal para vencer!
                     </p>
                   </TooltipContent>
                 </Tooltip>
@@ -67,7 +97,7 @@ const BingoGamePage: React.FC = () => {
             <div className="flex flex-wrap items-center gap-4 text-sm">
               <div className="flex items-center">
                 <Clock size={16} className="mr-1" />
-                <span>Novo item a cada 5 segundos</span>
+                <span>Novo jogador a cada 5 segundos</span>
               </div>
               <div className="flex items-center">
                 <Trophy size={16} className="mr-1" />
@@ -80,16 +110,34 @@ const BingoGamePage: React.FC = () => {
         <section className="py-8 px-4">
           <div className="container mx-auto">
             <div className="bg-white rounded-lg shadow-md p-6 max-w-4xl mx-auto">
-              <div className="mb-6">
-                <h2 className="font-heading font-bold text-lg text-center text-fu-blue-800 mb-2">
-                  Aguarde o anúncio dos jogadores e marque-os em sua cartela
-                </h2>
-                <p className="text-center text-gray-600 text-sm">
-                  Complete uma linha, coluna ou diagonal para vencer!
-                </p>
-              </div>
-              
-              <BingoCard onBingo={handleBingoWin} />
+              {loading ? (
+                <div className="text-center py-8">Carregando jogadores...</div>
+              ) : (
+                <>
+                  <div className="mb-6">
+                    <h2 className="font-heading font-bold text-lg text-center text-fu-blue-800 mb-2">
+                      Aguarde o anúncio dos jogadores e marque seus times/categorias na cartela
+                    </h2>
+                    <p className="text-center text-gray-600 text-sm">
+                      Complete uma linha, coluna ou diagonal para vencer!
+                    </p>
+                  </div>
+                  
+                  {players.length > 0 ? (
+                    <BingoCard onBingo={handleBingoWin} />
+                  ) : (
+                    <div className="text-center py-4">
+                      <p className="mb-4">Não foi possível carregar os jogadores. Tente adicionar alguns jogadores de demonstração.</p>
+                      <Button onClick={async () => {
+                        await addDemoPlayers();
+                        loadPlayers();
+                      }}>
+                        Adicionar Jogadores Demo
+                      </Button>
+                    </div>
+                  )}
+                </>
+              )}
               
               <div className="mt-8 border-t border-gray-200 pt-4">
                 <div className="text-center">

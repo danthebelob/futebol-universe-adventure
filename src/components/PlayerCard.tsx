@@ -1,7 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Badge } from "@/components/ui/badge";
 import { Star, Shield, Zap } from 'lucide-react';
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlayerCardProps {
   id: string;
@@ -25,10 +26,49 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   overall,
   attack,
   defense,
-  imageSrc = '/images/player-placeholder.png',
+  imageSrc,
   rarity = 'common'
 }) => {
   const [isFlipped, setIsFlipped] = useState(false);
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [imageError, setImageError] = useState(false);
+  
+  useEffect(() => {
+    const loadPlayerImage = async () => {
+      try {
+        // Se já temos uma URL completa do Supabase, use-a diretamente
+        if (imageSrc && imageSrc.startsWith('https://')) {
+          setImageUrl(imageSrc);
+          return;
+        }
+        
+        // Se temos um caminho para o storage do Supabase
+        if (imageSrc && !imageSrc.startsWith('/')) {
+          const { data, error } = await supabase.storage
+            .from('player_images')
+            .getPublicUrl(imageSrc);
+            
+          if (error) {
+            console.error('Erro ao buscar imagem:', error);
+            setImageError(true);
+            return;
+          }
+          
+          if (data && data.publicUrl) {
+            setImageUrl(data.publicUrl);
+          }
+        } else {
+          // Usando o caminho local ou placeholder
+          setImageUrl(imageSrc || '/images/player-placeholder.png');
+        }
+      } catch (error) {
+        console.error('Erro ao carregar imagem:', error);
+        setImageError(true);
+      }
+    };
+    
+    loadPlayerImage();
+  }, [imageSrc]);
   
   const cardClass = `player-card player-card-${rarity}`;
   
@@ -56,6 +96,11 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
   const handleClick = () => {
     setIsFlipped(!isFlipped);
   };
+
+  const handleImageError = () => {
+    console.log('Erro ao carregar imagem para:', name);
+    setImageError(true);
+  };
   
   return (
     <div 
@@ -77,9 +122,10 @@ const PlayerCard: React.FC<PlayerCardProps> = ({
           
           <div className="flex-1 flex items-center justify-center">
             <img 
-              src={imageSrc} 
+              src={imageError ? '/images/player-placeholder.png' : (imageUrl || '/images/player-placeholder.png')}
               alt={name}
               className="h-[60%] object-contain mx-auto"
+              onError={handleImageError}
             />
           </div>
           
