@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Football, CheckCircle2 } from 'lucide-react';
+import { Ball, CheckCircle2 } from 'lucide-react';
 import { toast } from "@/hooks/use-toast";
 
 interface BingoCell {
@@ -222,7 +222,7 @@ const BingoCard: React.FC<BingoCardProps> = ({ onBingo }) => {
               >
                 {cell.category === 'free' ? (
                   <div className="flex flex-col items-center justify-center">
-                    <Football size={20} />
+                    <Ball size={20} />
                     <span>FREE</span>
                   </div>
                 ) : cell.marked ? (
